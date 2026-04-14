@@ -42,7 +42,6 @@ export function ComparisonChart({
 }: ComparisonChartProps) {
   const visibleMetrics = metrics.slice(0, maxMetrics)
 
-  // Build chart data: one entry per metric, with primary and compare bars
   const data = visibleMetrics.map(m => {
     const primaryVal = selectedMonths.reduce((acc, mo) => acc + (m.values[mo] ?? 0), 0)
     const compareVal = compareMonths.reduce((acc, mo) => acc + (m.values[mo] ?? 0), 0)
@@ -53,8 +52,6 @@ export function ComparisonChart({
       Comparación: compareMonths.length ? (compareVal || undefined) : undefined,
     }
   })
-
-  const ChartComponent = type === 'line' ? LineChart : BarChart
 
   return (
     <div className="bg-slate-800 rounded-xl p-5 border border-slate-700">
@@ -96,7 +93,7 @@ export function ComparisonChart({
   )
 }
 
-// ─── Time Series Chart (one line per metric over months) ───────────────────────
+// ─── Time Series Chart ─────────────────────────────────────────────────────────
 
 interface TimeSeriesChartProps {
   metrics: MetricRow[]
