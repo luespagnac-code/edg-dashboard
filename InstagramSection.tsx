@@ -2,7 +2,7 @@ import type { InstagramData, MonthKey } from '../../types'
 import { MetricCard } from '../shared/MetricCard'
 import { ComparisonChart, TimeSeriesChart } from '../shared/ComparisonChart'
 import { InsightCard } from '../shared/InsightCard'
-import { sumMetricOverMonths, pctChange } from '../../utils/parseSheets'
+import { sumMetricOverMonths } from '../../utils/parseSheets'
 
 const COLOR = '#C13584'
 const COLORS = ['#C13584', '#E1306C', '#F77737', '#FCAF45', '#405DE6']
@@ -45,7 +45,6 @@ export function InstagramSection({ data, selectedMonths, compareMonths }: Props)
 
   return (
     <div className="space-y-6">
-      {/* KPI Cards */}
       <section>
         <h2 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">
           Posicionamiento de Marca
@@ -60,7 +59,6 @@ export function InstagramSection({ data, selectedMonths, compareMonths }: Props)
         </div>
       </section>
 
-      {/* Charts row */}
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
         <ComparisonChart
           metrics={posic}
@@ -77,7 +75,6 @@ export function InstagramSection({ data, selectedMonths, compareMonths }: Props)
         />
       </div>
 
-      {/* Audience section */}
       {audiencia.length > 0 && (
         <section>
           <h2 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">
@@ -112,7 +109,6 @@ export function InstagramSection({ data, selectedMonths, compareMonths }: Props)
         </section>
       )}
 
-      {/* Insights */}
       <section>
         <h2 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">
           Insights y Recomendaciones
@@ -120,11 +116,7 @@ export function InstagramSection({ data, selectedMonths, compareMonths }: Props)
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <InsightCard
             title="Insights del período"
-            insights={
-              insightsText.length
-                ? insightsText
-                : STATIC_INSIGHTS.map(i => `${i.title}: ${i.text}`)
-            }
+            insights={insightsText.length ? insightsText : STATIC_INSIGHTS.map(i => `${i.title}: ${i.text}`)}
             type="insight"
             color={COLOR}
           />
