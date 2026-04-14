@@ -8,8 +8,6 @@ import {
   parseResumen,
 } from '../utils/parseSheets'
 
-const SHEET_ID = '1nLe9F1O3_wHavg6-jum8H8ATzHgPkC2z'
-
 const GID = {
   resumen: '1015862116',
   instagram: '910282513',
@@ -19,7 +17,7 @@ const GID = {
 }
 
 function sheetUrl(gid: string) {
-  return `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=${gid}`
+  return `/api/sheet/${gid}`
 }
 
 async function fetchCSV(url: string): Promise<string> {
