@@ -17,15 +17,13 @@ function PlatformCard({
   name,
   color,
   metrics,
-  selectedMonths,
-  compareMonths,
 }: {
   icon: React.ReactNode
   name: string
   color: string
   metrics: { label: string; value: number; prev?: number; format?: 'compact' | 'currency' | 'percent' | 'raw' }[]
-  selectedMonths: MonthKey[]
-  compareMonths: MonthKey[]
+  selectedMonths?: MonthKey[]
+  compareMonths?: MonthKey[]
 }) {
   return (
     <div className="bg-slate-800 rounded-xl p-5 border border-slate-700">
@@ -46,9 +44,7 @@ function PlatformCard({
                   : new Intl.NumberFormat('es-AR').format(m.value)}
               </span>
               {m.prev !== undefined && m.prev > 0 && (
-                <span
-                  className={`block text-xs ${m.value >= m.prev ? 'text-emerald-400' : 'text-red-400'}`}
-                >
+                <span className={`block text-xs ${m.value >= m.prev ? 'text-emerald-400' : 'text-red-400'}`}>
                   {m.value >= m.prev ? '+' : ''}{(((m.value - m.prev) / m.prev) * 100).toFixed(1)}%
                 </span>
               )}
@@ -84,20 +80,17 @@ export function ResumenSection({ data, selectedMonths, compareMonths }: Props) {
     ? compareMonths.reduce((acc, m) => acc + (ma.investmentTotal[m] ?? 0), 0)
     : undefined
 
-  // Combined reach
   const igReach = getIGMetric('alcanzad', selectedMonths)
   const fbReach = getFBMetric('espect', selectedMonths)
   const totalReach = igReach + fbReach
   const prevIGReach = compareMonths.length ? getIGMetric('alcanzad', compareMonths) : undefined
   const prevFBReach = compareMonths.length ? getFBMetric('espect', compareMonths) : undefined
   const prevTotalReach = prevIGReach !== undefined && prevFBReach !== undefined
-    ? prevIGReach + prevFBReach
-    : undefined
+    ? prevIGReach + prevFBReach : undefined
 
   const igViews = getIGMetric('visual', selectedMonths)
   const fbViews = getFBMetric('visual', selectedMonths)
   const totalViews = igViews + fbViews
-
   const igFollowers = getIGMetric('seguidor', selectedMonths)
   const fbFollowers = getFBMetric('seguidor', selectedMonths)
 
@@ -110,11 +103,8 @@ export function ResumenSection({ data, selectedMonths, compareMonths }: Props) {
 
   return (
     <div className="space-y-6">
-      {/* Global KPIs */}
       <section>
-        <h2 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">
-          Métricas Globales
-        </h2>
+        <h2 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Métricas Globales</h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           <MetricCard label="Alcance Total (IG + FB)" value={totalReach} previousValue={prevTotalReach} color="#6366F1" />
           <MetricCard label="Visualizaciones Totales" value={totalViews} previousValue={undefined} color="#6366F1" />
@@ -123,18 +113,11 @@ export function ResumenSection({ data, selectedMonths, compareMonths }: Props) {
         </div>
       </section>
 
-      {/* Platform cards */}
       <section>
-        <h2 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">
-          Por Plataforma
-        </h2>
+        <h2 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Por Plataforma</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
           <PlatformCard
-            icon={<Instagram size={18} />}
-            name="Instagram"
-            color="#C13584"
-            selectedMonths={selectedMonths}
-            compareMonths={compareMonths}
+            icon={<Instagram size={18} />} name="Instagram" color="#C13584"
             metrics={[
               { label: 'Visualizaciones', value: igViews, prev: compareMonths.length ? getIGMetric('visual', compareMonths) : undefined },
               { label: 'Alcance', value: igReach, prev: prevIGReach },
@@ -142,11 +125,7 @@ export function ResumenSection({ data, selectedMonths, compareMonths }: Props) {
             ]}
           />
           <PlatformCard
-            icon={<Facebook size={18} />}
-            name="Facebook"
-            color="#4267B2"
-            selectedMonths={selectedMonths}
-            compareMonths={compareMonths}
+            icon={<Facebook size={18} />} name="Facebook" color="#4267B2"
             metrics={[
               { label: 'Espectadores únicos', value: fbReach, prev: prevFBReach },
               { label: 'Visualizaciones', value: fbViews, prev: compareMonths.length ? getFBMetric('visual', compareMonths) : undefined },
@@ -154,31 +133,16 @@ export function ResumenSection({ data, selectedMonths, compareMonths }: Props) {
             ]}
           />
           <PlatformCard
-            icon={<Music2 size={18} />}
-            name="TikTok"
-            color="#69C9D0"
-            selectedMonths={selectedMonths}
-            compareMonths={compareMonths}
-            metrics={[
-              { label: 'Estado', value: 0 },
-              { label: 'Datos disponibles', value: 0 },
-            ]}
+            icon={<Music2 size={18} />} name="TikTok" color="#69C9D0"
+            metrics={[{ label: 'En configuración', value: 0 }]}
           />
           <PlatformCard
-            icon={<BarChart3 size={18} />}
-            name="Meta Ads"
-            color="#0081FB"
-            selectedMonths={selectedMonths}
-            compareMonths={compareMonths}
-            metrics={[
-              { label: 'Inversión total', value: totalInvestment, format: 'currency', prev: prevInvestment },
-              { label: 'Mensajes recibidos', value: 0 },
-            ]}
+            icon={<BarChart3 size={18} />} name="Meta Ads" color="#0081FB"
+            metrics={[{ label: 'Inversión total', value: totalInvestment, format: 'currency', prev: prevInvestment }]}
           />
         </div>
       </section>
 
-      {/* Trend chart */}
       {ig && (
         <TimeSeriesChart
           metrics={ig.posicionamiento.slice(0, 3)}
@@ -188,16 +152,9 @@ export function ResumenSection({ data, selectedMonths, compareMonths }: Props) {
         />
       )}
 
-      {/* Insights */}
       <section>
-        <h2 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">
-          Insights Generales
-        </h2>
-        <InsightCard
-          title="Resumen ejecutivo del período"
-          insights={SUMMARY_INSIGHTS}
-          color="#6366F1"
-        />
+        <h2 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Insights Generales</h2>
+        <InsightCard title="Resumen ejecutivo del período" insights={SUMMARY_INSIGHTS} color="#6366F1" />
       </section>
     </div>
   )
