@@ -1,0 +1,1434 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard · Espacio de Genios</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1" integrity="sha384-jb8JQMbMoBUzgWatfe6COACi2ljcDdZQ2OxczGA3bGNeWe+6DChMTBJemed7ZnvJ" crossorigin="anonymous"></script>
+<style>
+:root{
+  --bg:#f0f2f7;--card:#fff;--hdr:#1a1036;--text:#1e1e2e;--muted:#6b7280;
+  --border:#e5e7eb;--pos:#10b981;--neg:#ef4444;--gap:16px;--r:12px;
+  --shadow:0 1px 4px rgba(0,0,0,.07),0 4px 16px rgba(0,0,0,.04);
+  --ig:#E1306C;--fb:#1877F2;--ads:#00C49A;--acc:#6c3ee8;--gads:#4285F4;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.5}
+
+/* HEADER */
+.hdr{background:var(--hdr);padding:0 28px;display:flex;align-items:center;justify-content:space-between;min-height:58px;gap:12px;flex-wrap:wrap}
+.hdr-left{display:flex;align-items:center;gap:12px}
+.hdr-logo{width:36px;height:36px;background:linear-gradient(135deg,var(--ig),var(--acc));border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:17px}
+.hdr h1{color:#fff;font-size:16px;font-weight:700}
+.hdr p{color:rgba(255,255,255,.5);font-size:11px}
+.hdr-brand{color:rgba(255,255,255,.5);font-size:12px}
+
+/* STICKY BAR */
+.sticky{position:sticky;top:0;z-index:100;background:#fff;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 28px;gap:12px;flex-wrap:wrap;min-height:50px}
+
+/* TABS */
+.tabs{display:flex;gap:2px}
+.tab{padding:8px 16px;border:none;background:none;cursor:pointer;font-size:13px;font-weight:600;color:var(--muted);border-bottom:3px solid transparent;transition:all .15s;white-space:nowrap}
+.tab:hover{color:var(--text)}
+.tab.active{color:var(--acc);border-bottom-color:var(--acc)}
+.tab.active[data-t=instagram]{color:var(--ig);border-bottom-color:var(--ig)}
+.tab.active[data-t=facebook]{color:var(--fb);border-bottom-color:var(--fb)}
+.tab.active[data-t=ads]{color:var(--ads);border-bottom-color:var(--ads)}
+.tab.active[data-t=gads]{color:var(--gads);border-bottom-color:var(--gads)}
+.kpi.gads{border-top-color:var(--gads)}
+.pbadge.gads{background:rgba(66,133,244,.1);color:var(--gads);border-color:rgba(66,133,244,.2)}
+
+/* MONTH MULTI-PICKER */
+.months{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.months span{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-right:2px}
+.mbtn{padding:4px 14px;border-radius:20px;border:1.5px solid var(--border);background:none;cursor:pointer;font-size:12px;font-weight:600;color:var(--muted);transition:all .15s;user-select:none}
+.mbtn:hover{border-color:var(--acc);color:var(--acc)}
+.mbtn.sel{background:var(--acc);border-color:var(--acc);color:#fff}
+
+/* PANELS */
+.main{max-width:1380px;margin:0 auto;padding:24px 28px 48px}
+.panel{display:none}
+.panel.active{display:block}
+
+/* PERIOD BADGE */
+.pbadge{display:inline-flex;align-items:center;gap:6px;padding:5px 14px;border-radius:20px;font-size:12px;font-weight:600;margin-bottom:20px;background:rgba(108,62,232,.1);color:var(--acc);border:1px solid rgba(108,62,232,.2)}
+.pbadge.ig{background:rgba(225,48,108,.1);color:var(--ig);border-color:rgba(225,48,108,.2)}
+.pbadge.fb{background:rgba(24,119,242,.1);color:var(--fb);border-color:rgba(24,119,242,.2)}
+.pbadge.ads{background:rgba(0,196,154,.1);color:var(--ads);border-color:rgba(0,196,154,.2)}
+
+/* KPI GRID */
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:var(--gap);margin-bottom:24px}
+.kpi{background:var(--card);border-radius:var(--r);padding:16px 18px;box-shadow:var(--shadow);border-top:3px solid var(--border)}
+.kpi.ig{border-top-color:var(--ig)}.kpi.fb{border-top-color:var(--fb)}
+.kpi.tt{border-top-color:var(--tt)}.kpi.ads{border-top-color:var(--ads)}.kpi.acc{border-top-color:var(--acc)}
+.kpi-label{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px}
+.kpi-val{font-size:24px;font-weight:800;color:var(--text);line-height:1.1}
+.kpi-prev{font-size:11px;color:var(--muted);margin-top:3px}
+.kpi-chg{font-size:12px;font-weight:600;margin-top:4px}
+.kpi-chg.up{color:var(--pos)}.kpi-chg.down{color:var(--neg)}.kpi-chg.neu{color:var(--muted)}
+
+/* SECTION HEADER */
+.sec{margin:28px 0 14px;display:flex;align-items:center;gap:10px}
+.sec-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--muted);white-space:nowrap}
+.sec::after{content:'';flex:1;height:1px;background:var(--border)}
+.r-divider{margin:32px 0;border:none;border-top:2px solid var(--border);border-radius:2px}
+
+/* GRIDS */
+.g1{display:grid;grid-template-columns:1fr;gap:var(--gap);margin-bottom:var(--gap)}
+.g2{display:grid;grid-template-columns:repeat(2,1fr);gap:var(--gap);margin-bottom:var(--gap)}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--gap);margin-bottom:var(--gap)}
+
+/* CHART CARD */
+.cc{background:var(--card);border-radius:var(--r);padding:18px 20px;box-shadow:var(--shadow)}
+.cc-title{font-size:13px;font-weight:700;color:var(--text);margin-bottom:2px}
+.cc-sub{font-size:11px;color:var(--muted);margin-bottom:14px}
+
+/* NO PREV */
+.no-prev{display:flex;align-items:center;justify-content:center;font-size:13px;color:var(--muted);font-weight:500;gap:8px;height:100%}
+
+.coming-soon{text-align:center;padding:40px;background:var(--card);border-radius:var(--r);box-shadow:var(--shadow);color:var(--muted);margin-top:16px}
+
+/* RESUMEN TABLE */
+.rtable-wrap{overflow-x:auto;margin-top:4px}
+.rtable{width:100%;border-collapse:collapse;font-size:13px}
+.rtable th{padding:9px 14px;text-align:left;border-bottom:2px solid var(--border);color:var(--muted);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;white-space:nowrap;background:#fafafa}
+.rtable td{padding:9px 14px;border-bottom:1px solid var(--border)}
+.rtable tr:last-child td{border-bottom:none}
+.rtable tr:hover td{background:#fafbff}
+.rtable .row-head{font-weight:700;color:var(--text)}
+.rtable .section-row td{background:#f5f6fa;font-weight:700;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;padding-top:14px}
+.rtable .total-row td{font-weight:800;background:#f0f2f7;border-top:2px solid var(--border)}
+.pill-sm{display:inline-block;padding:2px 8px;border-radius:8px;font-size:10px;font-weight:700}
+.pill-ig{background:#fce7ef;color:var(--ig)}.pill-fb{background:#e8f1ff;color:var(--fb)}.pill-ads{background:#e0faf4;color:var(--ads)}
+.empty-val{color:#c4c4c4;font-style:italic}
+
+/* PENDIENTE NOTICE */
+.pend-note{background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:10px 14px;font-size:12px;color:#92400e;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+
+/* REFRESH BTN */
+.refresh-btn{padding:5px 14px;border-radius:20px;border:1.5px solid rgba(255,255,255,.25);background:rgba(255,255,255,.1);color:rgba(255,255,255,.85);cursor:pointer;font-size:12px;font-weight:600;transition:all .15s;white-space:nowrap}
+.refresh-btn:hover{background:rgba(255,255,255,.2);border-color:rgba(255,255,255,.5)}
+.last-upd{font-size:11px;color:rgba(255,255,255,.4);margin-left:6px}
+
+/* INSIGHT / NEXT STEPS */
+.insight-block,.nextsteps-block{background:var(--card);border-radius:var(--r);padding:20px 24px;box-shadow:var(--shadow)}
+.insight-block{border-left:4px solid var(--ig)}
+.nextsteps-block{border-left:4px solid #10b981}
+.block-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;margin-bottom:10px}
+.insight-block .block-label{color:var(--ig)}
+.nextsteps-block .block-label{color:#10b981}
+.block-text{font-size:13px;color:var(--text);line-height:1.75;white-space:pre-line}
+.no-text{font-size:13px;color:var(--muted);font-style:italic}
+
+/* CONTENIDOS TABLE */
+.cont-link{color:var(--ig);text-decoration:none;font-weight:600}
+.cont-link:hover{text-decoration:underline}
+.badge-num{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:var(--ig);color:#fff;font-size:11px;font-weight:700}
+
+@media(max-width:900px){.g2,.g3{grid-template-columns:1fr}.sticky{padding:0 14px}.main{padding:16px}}
+@media print{.sticky{display:none}.hdr{print-color-adjust:exact}.cc{break-inside:avoid}}
+</style>
+</head>
+<body>
+
+<header class="hdr">
+  <div class="hdr-left">
+    <div class="hdr-logo">🧠</div>
+    <div><h1>Espacio de Genios · Dashboard de Marketing</h1><p>Reporte mensual de redes sociales · 2026</p></div>
+  </div>
+  <div style="display:flex;align-items:center;gap:8px">
+    <button class="refresh-btn" onclick="doRefresh()">🔄 Actualizar</button>
+    <span class="last-upd" id="last-upd"></span>
+  </div>
+</header>
+
+<div class="sticky">
+  <nav class="tabs">
+    <button class="tab active" data-t="resumen"   onclick="setTab('resumen')">📊 Resumen</button>
+    <button class="tab"        data-t="instagram" onclick="setTab('instagram')">📷 Instagram</button>
+    <button class="tab"        data-t="facebook"  onclick="setTab('facebook')">📘 Facebook</button>
+    <button class="tab"        data-t="ads"       onclick="setTab('ads')">📣 Meta Ads</button>
+    <button class="tab"        data-t="gads"      onclick="setTab('gads')">🔍 Google Ads</button>
+  </nav>
+  <div class="months">
+    <span>Período:</span>
+    <button class="mbtn sel" data-i="0" onclick="toggleMonth(0)">Enero</button>
+    <button class="mbtn sel" data-i="1" onclick="toggleMonth(1)">Febrero</button>
+    <button class="mbtn sel" data-i="2" onclick="toggleMonth(2)">Marzo</button>
+  </div>
+</div>
+
+<main class="main">
+  <div id="p-resumen"   class="panel active"></div>
+  <div id="p-instagram" class="panel"></div>
+  <div id="p-facebook"  class="panel"></div>
+  <div id="p-ads"       class="panel"></div>
+  <div id="p-gads"      class="panel"></div>
+</main>
+
+<script>
+// ── DATA ──────────────────────────────────────────────────────────────────
+const MO = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+
+const N12 = ()=>Array(12).fill(null);
+
+const D = {
+  ig:{
+    views:    [253000,211490,214710,...Array(9).fill(null)],
+    alcance:  [97617, 93373, 91850, ...Array(9).fill(null)],
+    inter:    [104,   115,   216,   ...Array(9).fill(null)],
+    seg:      [19,    14,    66,    ...Array(9).fill(null)],
+    visitas:  [2198,  1938,  1864,  ...Array(9).fill(null)],
+    clics:    [1975,  1717,  1455,  ...Array(9).fill(null)],
+    intSeg:   [74,    54,    139,   ...Array(9).fill(null)],
+    intNoSeg: [30,    61,    92,    ...Array(9).fill(null)],
+    lkReels:  [19,    28,    40,    ...Array(9).fill(null)],
+    cmReels:  [0,     1,     0,     ...Array(9).fill(null)],
+    gdReels:  [0,     6,     20,    ...Array(9).fill(null)],
+    rpReels:  [1,     0,     2,     ...Array(9).fill(null)],
+    shReels:  [3,     4,     9,     ...Array(9).fill(null)],
+    lkPosts:  [12,    3,     19,    ...Array(9).fill(null)],
+    gdPosts:  [0,     4,     11,    ...Array(9).fill(null)],
+    shPosts:  [2,     0,     4,     ...Array(9).fill(null)],
+    // Mejores contenidos
+    cont:[
+      { nombre:[...Array(12).fill(null)], link:[...Array(12).fill('')], views:[...Array(12).fill(null)], likes:[...Array(12).fill(null)] },
+      { nombre:[...Array(12).fill(null)], link:[...Array(12).fill('')], views:[...Array(12).fill(null)], likes:[...Array(12).fill(null)] },
+    ],
+    insights:   Array(12).fill(''),
+    nextSteps: Array(12).fill(''),
+  },
+  fb:{
+    esp:      [344594,267173,357351,...Array(9).fill(null)],
+    views:    [955465,719249,734046,...Array(9).fill(null)],
+    seg:      [48,    72,    193,   ...Array(9).fill(null)],
+    inter:    [415,   534,   1072,  ...Array(9).fill(null)],
+    repro3s:  [54788, 67501, 27330, ...Array(9).fill(null)],
+    clics:    [1893,  1461,  1727,  ...Array(9).fill(null)],
+    reels:    [328,   335,   466,   ...Array(9).fill(null)],
+    foto:     [33,    90,    287,   ...Array(9).fill(null)],
+    story:    [31,    65,    105,   ...Array(9).fill(null)],
+    cont:[
+      { nombre:Array(12).fill(null), link:Array(12).fill(''), views:Array(12).fill(null), likes:Array(12).fill(null) },
+      { nombre:Array(12).fill(null), link:Array(12).fill(''), views:Array(12).fill(null), likes:Array(12).fill(null) },
+    ],
+    insights:  Array(12).fill(''),
+    nextSteps: Array(12).fill(''),
+  },
+  ads:{
+    inv:       Array(12).fill(null),
+    invTotal:  Array(12).fill(null),
+    invCentro: Array(12).fill(null),
+    invProy:   Array(12).fill(null),
+    msgs:      Array(12).fill(null),
+    leads:     Array(12).fill(null),
+    camps:{
+      'TOFU · Tráfico IG': {
+        inv:Array(12).fill(null), alc:Array(12).fill(null),
+        imp:Array(12).fill(null), cpa:Array(12).fill(null), cpm:Array(12).fill(null), ctr:Array(12).fill(null),
+        msgs:Array(12).fill(null), leads:Array(12).fill(null),
+        anuncio:Array(12).fill(null).map(()=>({txt:'',url:''})),
+      },
+      'TOFU · Alcance': {
+        inv:Array(12).fill(null), alc:Array(12).fill(null),
+        imp:Array(12).fill(null), cpa:Array(12).fill(null), cpm:Array(12).fill(null), ctr:Array(12).fill(null),
+        msgs:Array(12).fill(null), leads:Array(12).fill(null),
+        anuncio:Array(12).fill(null).map(()=>({txt:'',url:''})),
+      },
+      'TOFU · Video Views': {
+        inv:Array(12).fill(null), alc:Array(12).fill(null),
+        imp:Array(12).fill(null), cpa:Array(12).fill(null), cpm:Array(12).fill(null), ctr:Array(12).fill(null),
+        msgs:Array(12).fill(null), leads:Array(12).fill(null),
+        anuncio:Array(12).fill(null).map(()=>({txt:'',url:''})),
+      },
+      'MOFU · Mensajes': {
+        inv:Array(12).fill(null), alc:Array(12).fill(null),
+        imp:Array(12).fill(null), cpa:Array(12).fill(null), cpm:Array(12).fill(null), ctr:Array(12).fill(null),
+        msgs:Array(12).fill(null), leads:Array(12).fill(null),
+        anuncio:Array(12).fill(null).map(()=>({txt:'',url:''})),
+      },
+      'MOFU · Lead Forms': {
+        inv:Array(12).fill(null), alc:Array(12).fill(null),
+        imp:Array(12).fill(null), cpa:Array(12).fill(null), cpm:Array(12).fill(null), ctr:Array(12).fill(null),
+        msgs:Array(12).fill(null), leads:Array(12).fill(null),
+        anuncio:Array(12).fill(null).map(()=>({txt:'',url:''})),
+      },
+      'BOFU · Retargeting': {
+        inv:Array(12).fill(null), alc:Array(12).fill(null),
+        imp:Array(12).fill(null), cpa:Array(12).fill(null), cpm:Array(12).fill(null), ctr:Array(12).fill(null),
+        msgs:Array(12).fill(null), leads:Array(12).fill(null),
+        anuncio:Array(12).fill(null).map(()=>({txt:'',url:''})),
+      },
+      'Tienda · TOFU': {
+        inv:Array(12).fill(null), alc:Array(12).fill(null),
+        imp:Array(12).fill(null), cpa:Array(12).fill(null), cpm:Array(12).fill(null), ctr:Array(12).fill(null),
+        msgs:Array(12).fill(null), leads:Array(12).fill(null),
+        visitas:Array(12).fill(null),
+        viewcontent:Array(12).fill(null), addtocart:Array(12).fill(null),
+        compras:Array(12).fill(null), valorCompras:Array(12).fill(null),
+        anuncio:Array(12).fill(null).map(()=>({txt:'',url:''})),
+      },
+      'Tienda · MOFU': {
+        inv:Array(12).fill(null), alc:Array(12).fill(null),
+        imp:Array(12).fill(null), cpa:Array(12).fill(null), cpm:Array(12).fill(null), ctr:Array(12).fill(null),
+        msgs:Array(12).fill(null), leads:Array(12).fill(null),
+        visitas:Array(12).fill(null),
+        viewcontent:Array(12).fill(null), addtocart:Array(12).fill(null),
+        compras:Array(12).fill(null), valorCompras:Array(12).fill(null),
+        anuncio:Array(12).fill(null).map(()=>({txt:'',url:''})),
+      },
+      'Tienda · BOFU': {
+        inv:Array(12).fill(null), alc:Array(12).fill(null),
+        imp:Array(12).fill(null), cpa:Array(12).fill(null), cpm:Array(12).fill(null), ctr:Array(12).fill(null),
+        msgs:Array(12).fill(null), leads:Array(12).fill(null),
+        visitas:Array(12).fill(null),
+        viewcontent:Array(12).fill(null), addtocart:Array(12).fill(null),
+        compras:Array(12).fill(null), valorCompras:Array(12).fill(null),
+        anuncio:Array(12).fill(null).map(()=>({txt:'',url:''})),
+      },
+    },
+    insights:  Array(12).fill(''),
+    nextSteps: Array(12).fill(''),
+  },
+  // ── Convertidos en Centro ──
+  centro:{
+    inv:      Array(12).fill(null),
+    pk_cant:  Array(12).fill(null),
+    pk_monto: Array(12).fill(null),
+    ter_cant: Array(12).fill(null),
+    ter_monto:Array(12).fill(null),
+    valor:    Array(12).fill(null),
+    capac:    Array(12).fill(null),
+    total:    Array(12).fill(null),
+  },
+  // ── Proyecto / Comercializadora ──
+  proy:{
+    inv:     Array(12).fill(null),
+    leads:   Array(12).fill(null),
+    presup:  Array(12).fill(null),
+    cierres: Array(12).fill(null),
+    tasa:    Array(12).fill(null),
+  },
+  // ── Google Ads ──
+  gads:{
+    invTotal:  Array(12).fill(null),
+    invSearch: Array(12).fill(null),
+    invShop:   Array(12).fill(null),
+    invProy:   Array(12).fill(null),
+    camps:{
+      'Search · Padres General':    {inv:Array(12).fill(null),imp:Array(12).fill(null),clics:Array(12).fill(null),ctr:Array(12).fill(null),cpc:Array(12).fill(null),conv:Array(12).fill(null),cpa:Array(12).fill(null),cvr:Array(12).fill(null)},
+      'Search · Padres Diagnóstico':{inv:Array(12).fill(null),imp:Array(12).fill(null),clics:Array(12).fill(null),ctr:Array(12).fill(null),cpc:Array(12).fill(null),conv:Array(12).fill(null),cpa:Array(12).fill(null),cvr:Array(12).fill(null)},
+      'Search · Docentes':          {inv:Array(12).fill(null),imp:Array(12).fill(null),clics:Array(12).fill(null),ctr:Array(12).fill(null),cpc:Array(12).fill(null),conv:Array(12).fill(null),cpa:Array(12).fill(null),cvr:Array(12).fill(null)},
+      'Shopping':                   {inv:Array(12).fill(null),imp:Array(12).fill(null),clics:Array(12).fill(null),ctr:Array(12).fill(null),cpc:Array(12).fill(null),conv:Array(12).fill(null),cpa:Array(12).fill(null),cvr:Array(12).fill(null)},
+    },
+    insights:  Array(12).fill(''),
+    nextSteps: Array(12).fill(''),
+  }
+};
+D.ads.alcTotal = MO.map((_,i)=>Object.values(D.ads.camps).reduce((s,c)=>s+(c.alc[i]||0),0));
+
+// ── STATE ─────────────────────────────────────────────────────────────────
+let SEL=[0,1,2];   // se actualiza tras cargar el sheet
+let TAB='resumen';
+const CHS={};
+
+// ── MONTH HELPERS ─────────────────────────────────────────────────────────
+const lastM  = ()=> SEL[SEL.length-1];
+const prevM  = ()=> SEL.length>=2 ? SEL[SEL.length-2] : null;
+const selLbls= ()=> SEL.map(i=>MO[i]);
+const selData= (arr)=> SEL.map(i=> arr[i]??0);
+
+// ── FORMAT HELPERS ────────────────────────────────────────────────────────
+const fN =(n,d=0)=> n==null||isNaN(n)?'—':n.toLocaleString('es-MX',{minimumFractionDigits:d,maximumFractionDigits:d});
+const fK =(n)=>{ if(n==null||isNaN(n))return'—'; const a=Math.abs(n); return a>=1e6?(n/1e6).toFixed(1)+'M':a>=1e3?(n/1e3).toFixed(1)+'K':fN(n); };
+const f$ =(n)=> n==null?'—':'$'+fN(n,2);
+const pct=(a,b)=>(!b||b===0)?null:((a-b)/b)*100;
+
+// ── KPI CARD ─────────────────────────────────────────────────────────────
+function kpi(label,data,fmt='k',cls=''){
+  const m=lastM(), p=prevM();
+  const v=data[m], pv=p!==null?data[p]:null;
+  if(v===null||v===undefined) return `<div class="kpi ${cls}"><div class="kpi-label">${label}</div><div class="kpi-val">—</div><div class="kpi-chg neu">Sin datos</div></div>`;
+  const fFn=fmt==='money'?f$:fmt==='pct'?(n=>n==null?'—':fN(n,1)+'%'):fK;
+  const chg=(pv!=null)?pct(v,pv):null;
+  const chgHtml=chg!==null?`<div class="kpi-chg ${chg>=0?'up':'down'}">${chg>=0?'▲':'▼'} ${chg>=0?'+':''}${chg.toFixed(1)}% vs ${MO[p]}</div>`:`<div class="kpi-chg neu">${pv==null?'Sin datos previos':'Primer mes'}</div>`;
+  const prevHtml=pv!=null?`<div class="kpi-prev">${MO[p]}: ${fFn(pv)}</div>`:'';
+  return `<div class="kpi ${cls}"><div class="kpi-label">${label}</div><div class="kpi-val">${fFn(v)}</div>${prevHtml}${chgHtml}</div>`;
+}
+
+// ── LAYOUT HELPERS ────────────────────────────────────────────────────────
+const sec=(t)=>`<div class="sec"><span class="sec-title">${t}</span></div>`;
+const cc=(id,title,sub,h=265)=>`<div class="cc"><div class="cc-title">${title}</div><div class="cc-sub">${sub}</div><div style="position:relative;height:${h}px"><canvas id="${id}"></canvas></div></div>`;
+
+// ── CHART ENGINE ──────────────────────────────────────────────────────────
+const C={ig:'#E1306C',igL:'rgba(225,48,108,.15)',fb:'#1877F2',fbL:'rgba(24,119,242,.15)',
+  ads:'#00C49A',adsL:'rgba(0,196,154,.15)',acc:'#6c3ee8',accL:'rgba(108,62,232,.15)',
+  prev:'rgba(160,160,160,.3)',prevB:'rgba(160,160,160,.65)',
+  pal:['#6c3ee8','#00C49A','#3b82f6','#f59e0b','#8b5cf6','#ef4444']};
+
+function mk(id,cfg){
+  if(CHS[id]){try{CHS[id].destroy()}catch(e){}delete CHS[id];}
+  const el=document.getElementById(id); if(!el)return;
+  CHS[id]=new Chart(el.getContext('2d'),cfg);
+}
+function destroyAll(){Object.values(CHS).forEach(c=>{try{c.destroy()}catch(e){}});Object.keys(CHS).forEach(k=>delete CHS[k]);}
+
+function showNP(id){
+  const el=document.getElementById(id); if(!el)return;
+  el.parentElement.innerHTML=`<div class="no-prev">📅 Seleccioná al menos 2 meses para ver la comparativa</div>`;
+}
+
+// Grouped bar chart using SEL months (Resumen comparisons)
+function gBar(id,datasets,fmtCb){
+  const labels=selLbls();
+  mk(id,{type:'bar',
+    data:{labels,datasets:datasets.map(ds=>({
+      label:ds.label,data:SEL.map(i=>ds.data[i]??0),
+      backgroundColor:ds.color+'BB',borderColor:ds.color,borderWidth:1.5,borderRadius:5,
+    }))},
+    options:{responsive:true,maintainAspectRatio:false,
+      interaction:{mode:'index',intersect:false},
+      plugins:{legend:{position:'top',labels:{usePointStyle:true,padding:14,font:{size:11}}},
+        tooltip:{callbacks:{label(ctx){return ` ${ctx.dataset.label}: ${fmtCb?fmtCb(ctx.parsed.y):fK(ctx.parsed.y)}`;} }}},
+      scales:{x:{grid:{display:false},ticks:{font:{size:12}}},
+        y:{beginAtZero:true,ticks:{callback:v=>fmtCb?fmtCb(v):fK(v),font:{size:11}}}}}});
+}
+
+// Line trend (always all months for context)
+function trend(id,datasets){
+  mk(id,{type:'line',data:{labels:MO,datasets:datasets.map(ds=>({
+    label:ds.label,data:ds.data,borderColor:ds.color,backgroundColor:ds.colorL||(ds.color+'20'),
+    borderWidth:2.5,tension:.35,fill:ds.fill||false,pointRadius:5,pointHoverRadius:8,
+  }))},options:{responsive:true,maintainAspectRatio:false,
+    interaction:{mode:'index',intersect:false},
+    plugins:{legend:{position:'top',labels:{usePointStyle:true,padding:14,font:{size:11}}},
+      tooltip:{callbacks:{label(ctx){return ` ${ctx.dataset.label}: ${fK(ctx.parsed.y)}`;} }}},
+    scales:{x:{grid:{display:false}},y:{beginAtZero:true,ticks:{callback:v=>fK(v),font:{size:11}}}}}});
+}
+
+// Grouped bar prev vs current (last 2 in SEL)
+function compBar(id,metrics,color){
+  const p=prevM(); if(p===null){showNP(id);return;}
+  const m=lastM();
+  mk(id,{type:'bar',data:{labels:metrics.map(x=>x.label),datasets:[
+    {label:MO[p],data:metrics.map(x=>x.data[p]??0),backgroundColor:C.prev,borderColor:C.prevB,borderWidth:1.5,borderRadius:4},
+    {label:MO[m],data:metrics.map(x=>x.data[m]??0),backgroundColor:color+'BB',borderColor:color,borderWidth:1.5,borderRadius:4},
+  ]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
+    plugins:{legend:{position:'top',labels:{usePointStyle:true,padding:14,font:{size:11}}},
+      tooltip:{callbacks:{label(ctx){
+        const v=ctx.parsed.y; const m2=metrics[ctx.dataIndex];
+        const other=ctx.datasetIndex===1&&m2?m2.data[p]:null;
+        const chg=ctx.datasetIndex===1&&other?pct(v,other):null;
+        return ` ${ctx.dataset.label}: ${fK(v)}${chg!==null?' ('+( chg>=0?'+':'')+chg.toFixed(1)+'%)':''}`;
+      }}}},
+    scales:{x:{grid:{display:false}},y:{beginAtZero:true,ticks:{callback:v=>fK(v),font:{size:11}}}}}});
+}
+
+// % change bar (horizontal)
+function pctBar(id,metrics,color){
+  const p=prevM(); if(p===null){showNP(id);return;}
+  const m=lastM();
+  const vals=metrics.map(x=>{const c=x.data[m]??0,pv=x.data[p]??0; return pv===0?0:parseFloat(((c-pv)/pv*100).toFixed(1));});
+  mk(id,{type:'bar',data:{labels:metrics.map(x=>x.label),datasets:[{
+    label:`Variación vs ${MO[p]}`,data:vals,
+    backgroundColor:vals.map(v=>v>=0?'rgba(16,185,129,.7)':'rgba(239,68,68,.7)'),
+    borderColor:vals.map(v=>v>=0?'#10b981':'#ef4444'),borderWidth:1.5,borderRadius:4,
+  }]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:false},tooltip:{callbacks:{label(ctx){const v=ctx.parsed.x;return ` ${v>=0?'+':''}${v}%`;} }}},
+    scales:{x:{ticks:{callback:v=>v+'%',font:{size:11}},grid:{color:'rgba(0,0,0,.05)'}},
+      y:{grid:{display:false},ticks:{font:{size:12}}}}}});
+}
+
+// Stacked bar (always all months)
+function stackedBar(id,datasets,fmtCb){
+  mk(id,{type:'bar',data:{labels:MO,datasets:datasets.map((ds,i)=>({
+    label:ds.label,data:ds.data,backgroundColor:ds.color||C.pal[i%C.pal.length],borderRadius:3,
+  }))},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
+    plugins:{legend:{position:'top',labels:{usePointStyle:true,padding:12,font:{size:11}}}},
+    scales:{x:{stacked:true,grid:{display:false}},
+      y:{stacked:true,beginAtZero:true,ticks:{callback:fmtCb||fK,font:{size:11}}}}}});
+}
+
+// Donut
+function donut(id,labels,data,colors){
+  mk(id,{type:'doughnut',data:{labels,datasets:[{data,backgroundColor:colors||C.pal,borderColor:'#fff',borderWidth:2}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'60%',
+      plugins:{legend:{position:'right',labels:{usePointStyle:true,padding:12,font:{size:11}}},
+        tooltip:{callbacks:{label(ctx){const tot=ctx.dataset.data.reduce((a,b)=>a+b,0);
+          return ` ${ctx.label}: ${fK(ctx.parsed)} (${((ctx.parsed/tot)*100).toFixed(1)}%)`;}}}}}});
+}
+
+// Horizontal bar
+function hBar(id,labels,data,fmtCb){
+  mk(id,{type:'bar',data:{labels,datasets:[{label:'',data,backgroundColor:C.pal,borderRadius:4}]},
+    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label(ctx){return ` ${fmtCb(ctx.parsed.x)}`;} }}},
+      scales:{x:{beginAtZero:true,ticks:{callback:fmtCb,font:{size:11}}},y:{grid:{display:false},ticks:{font:{size:12}}}}}});
+}
+
+// ── TAB: RESUMEN ──────────────────────────────────────────────────────────
+function rResumen(){
+  const m=lastM(), p=prevM();
+  const pLabel=p!==null?` · vs ${MO[p]}`:'';
+
+  // Suma meses seleccionados de un array
+  const selSum=(arr)=>SEL.reduce((s,i)=>s+(arr[i]??0),0);
+  // Label del período
+  const fPeriod=()=>SEL.length===1?MO[SEL[0]]:`${MO[SEL[0]]} – ${MO[SEL[SEL.length-1]]}`;
+
+  // KPI universal: 1 mes → valor de ese mes + comparativa; varios meses → suma del período
+  const kpiAuto=(label,data,fmt,cls,color)=>{
+    const fFn=fmt==='money'?f$:fmt==='pct'?(n=>n==null?'—':fN(n,1)+'%'):fK;
+    const style=color?`style="border-top-color:${color}"`:'';
+    if(SEL.length===1){
+      // Un mes: mostrar valor + comparativa vs mes anterior en el array
+      const idx=SEL[0];
+      const v=data[idx];
+      const pidx=idx>0?idx-1:null;
+      const pv=pidx!==null?data[pidx]:null;
+      if(v==null||v===undefined) return `<div class="kpi ${cls}" ${style}><div class="kpi-label">${label}</div><div class="kpi-val">—</div><div class="kpi-chg neu">Sin datos</div></div>`;
+      const chg=pv!=null?pct(v,pv):null;
+      const chgHtml=chg!==null
+        ?`<div class="kpi-chg ${chg>=0?'up':'down'}">${chg>=0?'▲':'▼'} ${chg>=0?'+':''}${chg.toFixed(1)}% vs ${MO[pidx]}</div>`
+        :`<div class="kpi-chg neu">Sin mes anterior</div>`;
+      const prevHtml=pv!=null?`<div class="kpi-prev">${MO[pidx]}: ${fFn(pv)}</div>`:'';
+      return `<div class="kpi ${cls}" ${style}><div class="kpi-label">${label}</div><div class="kpi-val">${fFn(v)}</div>${prevHtml}${chgHtml}</div>`;
+    } else {
+      // Varios meses: mostrar suma del período
+      const total=selSum(data);
+      const valHtml=total==null||isNaN(total)?'—':fFn(total);
+      return `<div class="kpi ${cls}" ${style}><div class="kpi-label">${label}</div><div class="kpi-val">${valHtml}</div><div class="kpi-chg neu">Total: ${fPeriod()}</div></div>`;
+    }
+  };
+
+  // Campañas de CENTRO únicamente
+  const CAMP_DEFS=[
+    {lbl:'TOFU · Tráfico IG', dk:'TOFU · Tráfico IG', col:'#6c3ee8'},
+    {lbl:'TOFU · Alcance',    dk:'TOFU · Alcance',    col:'#8b5cf6'},
+    {lbl:'MOFU · Mensajes',   dk:'MOFU · Mensajes',   col:'#f59e0b'},
+    {lbl:'BOFU · Retargeting',dk:'BOFU · Retargeting',col:'#ef4444'},
+  ];
+
+  // Campañas de PROYECTO únicamente
+  const CAMP_PROY=[
+    {lbl:'TOFU · Video Views', dk:'TOFU · Video Views', col:'#0ea5e9'},
+    {lbl:'MOFU · Lead Forms',  dk:'MOFU · Lead Forms',  col:'#06b6d4'},
+  ];
+
+  // Total campañas Centro: fila "Inversión Centro ($)" del sheet Meta Ads → D.ads.invCentro
+  // Fallback: suma de las 4 campañas de Centro si esa fila no carga
+  const campSum = MO.map((_,i) => CAMP_DEFS.reduce((s,c) => s+(D.ads.camps[c.dk].inv[i]??0), 0));
+  const adsInvTotal = D.ads.invCentro.some(v=>v!=null&&v!==0) ? D.ads.invCentro : campSum;
+  const campKpis=CAMP_DEFS.map(c=>kpiAuto(c.lbl, D.ads.camps[c.dk].inv, 'money','',c.col)).join('');
+
+  // Total campañas Proyecto: fila "Inversion Proyecto ($)" → D.ads.invProy
+  // Fallback: suma de las 2 campañas de Proyecto
+  const campProySum = MO.map((_,i) => CAMP_PROY.reduce((s,c) => s+(D.ads.camps[c.dk].inv[i]??0), 0));
+  const adsInvProy = D.ads.invProy.some(v=>v!=null&&v!==0) ? D.ads.invProy : campProySum;
+  const campProyKpis=CAMP_PROY.map(c=>kpiAuto(c.lbl, D.ads.camps[c.dk].inv, 'money','',c.col)).join('');
+
+  // Altura dinámica del gráfico horizontal
+  const hChartH = Math.max(220, SEL.length * 80 + 60);
+  const hChartHP = Math.max(160, SEL.length * 60 + 60);
+
+  document.getElementById('p-resumen').innerHTML=`
+    <div class="pbadge">📊 ${MO[m]}${pLabel}</div>
+
+    ${sec('💰 Inversión Total Meta Ads')}
+    <div class="kpi-grid" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr))">
+      ${kpiAuto('Inversión Total', D.ads.invTotal, 'money','ads')}
+      ${kpiAuto('Inversión Centro', D.ads.invCentro, 'money','acc')}
+      ${kpiAuto('Inversión Proyecto', D.ads.invProy, 'money','ads')}
+    </div>
+
+    <hr class="r-divider">
+
+    ${sec('🏫 Centro · Inversión Meta Ads')}
+    <div class="kpi-grid" style="grid-template-columns:repeat(auto-fit,minmax(155px,1fr))">
+      ${kpiAuto('Total Campañas · Centro', adsInvTotal, 'money','acc')}
+      ${campKpis}
+    </div>
+    <div class="g1" style="margin-top:8px">
+      ${cc('r-camp-inv','Inversión por campaña · Centro','$ por mes seleccionado',hChartH)}
+    </div>
+
+    ${sec('🏫 Centro · Convertidos')}
+    <div class="kpi-grid" style="grid-template-columns:repeat(auto-fit,minmax(155px,1fr))">
+      ${kpiAuto('Inversión total · Centro', D.ads.invCentro, 'money','acc')}
+      ${kpiAuto('Pre-Kinder',D.centro.pk_monto,'money','acc')}
+      ${kpiAuto('Terapias',D.centro.ter_monto,'money','acc')}
+      ${kpiAuto('Valoraciones',D.centro.valor,'money','acc')}
+      ${kpiAuto('Capacitaciones',D.centro.capac,'money','acc')}
+    </div>
+    <div class="g2" style="margin-top:8px">
+      ${cc('r-centro-total','Total facturado · Centro','Período seleccionado',240)}
+      ${cc('r-centro-detail','Desglose por servicio','Pre-Kinder, Terapias, Valoraciones y Capacitaciones',240)}
+    </div>
+
+    <hr class="r-divider">
+
+    ${sec('🏗️ Proyecto · Inversión Meta Ads')}
+    <div class="kpi-grid" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr))">
+      ${kpiAuto('Total Campañas · Proyecto', adsInvProy, 'money','ads')}
+      ${campProyKpis}
+    </div>
+    <div class="g1" style="margin-top:8px">
+      ${cc('r-camp-proy-inv','Inversión por campaña · Proyecto','$ por mes seleccionado',hChartHP)}
+    </div>
+
+    ${sec('🏗️ Proyecto · Convertidos')}
+    <div class="kpi-grid" style="grid-template-columns:repeat(auto-fit,minmax(155px,1fr))">
+      ${kpiAuto('Inversión total · Proyecto', D.ads.invProy, 'money','ads')}
+      ${kpiAuto('Leads recibidos',D.proy.leads,'k','ads')}
+      ${kpiAuto('Presupuestos enviados',D.proy.presup,'k','ads')}
+      ${kpiAuto('Cierres',D.proy.cierres,'k','ads')}
+      ${kpiAuto('Tasa de cierre',D.proy.tasa,'pct','ads')}
+    </div>
+    <div class="g2" style="margin-top:8px">
+      ${cc('r-proy-conv','Leads vs Cierres concretados','Período seleccionado',240)}
+      ${cc('r-proy-inv','Inversión del proyecto','Período seleccionado',240)}
+    </div>
+
+    <hr class="r-divider">
+
+    ${sec('Instagram · Métricas principales')}
+    <div class="kpi-grid">
+      ${kpiAuto('Alcance total',D.ig.alcance,'k','ig')}
+      ${kpiAuto('Clics al sitio web',D.ig.clics,'k','ig')}
+      ${kpiAuto('Impresiones',D.ig.views,'k','ig')}
+      ${kpiAuto('Nuevos seguidores',D.ig.seg,'k','ig')}
+    </div>
+
+    ${sec('Alcance orgánico · Instagram vs Facebook')}
+    <div class="g1">${cc('r-alc','Alcance orgánico mensual','Cuentas alcanzadas IG vs Espectadores únicos FB',280)}</div>
+
+    ${sec('Clics al sitio web · Instagram vs Facebook')}
+    <div class="g1">${cc('r-clics','Clics al sitio web por mes','Clics al botón bio (IG) vs Clics en enlace (FB)',280)}</div>
+
+    ${sec('Impresiones · Instagram vs Facebook')}
+    <div class="g1">${cc('r-imp','Impresiones / Visualizaciones por mes','Views totales IG vs Visualizaciones totales FB',280)}</div>
+  `;
+
+  // ── Gráfico Centro: barras HORIZONTALES (meses en Y, $ en X) ──
+  mk('r-camp-inv',{type:'bar',
+    data:{
+      labels:selLbls(),
+      datasets:CAMP_DEFS.map(c=>({
+        label:c.lbl,
+        data:SEL.map(i=>D.ads.camps[c.dk].inv[i]??0),
+        backgroundColor:c.col+'BB',borderColor:c.col,borderWidth:1.5,borderRadius:4,
+      }))
+    },
+    options:{
+      indexAxis:'y',
+      responsive:true,maintainAspectRatio:false,
+      interaction:{mode:'index',intersect:false},
+      plugins:{
+        legend:{position:'top',labels:{usePointStyle:true,padding:12,font:{size:11}}},
+        tooltip:{callbacks:{label(ctx){return ` ${ctx.dataset.label}: ${f$(ctx.parsed.x)}`;} }}
+      },
+      scales:{
+        x:{beginAtZero:true,grid:{color:'rgba(0,0,0,.05)'},ticks:{callback:v=>'$'+fK(v),font:{size:11}}},
+        y:{grid:{display:false},ticks:{font:{size:12}}}
+      }
+    }
+  });
+
+  // ── Gráfico Proyecto: barras HORIZONTALES (meses en Y, $ en X) ──
+  // Si hay datos por campaña los muestra desglosados; si no, usa el total del sheet
+  const _proyHasCampData = CAMP_PROY.some(c => SEL.some(i => (D.ads.camps[c.dk].inv[i]??0) > 0));
+  const _proyDatasets = _proyHasCampData
+    ? CAMP_PROY.map(c=>({
+        label:c.lbl,
+        data:SEL.map(i=>D.ads.camps[c.dk].inv[i]??0),
+        backgroundColor:c.col+'BB',borderColor:c.col,borderWidth:1.5,borderRadius:4,
+      }))
+    : [{
+        label:'Inversión Proyecto',
+        data:SEL.map(i=>D.ads.invProy[i]??0),
+        backgroundColor:'#0ea5e9BB',borderColor:'#0ea5e9',borderWidth:1.5,borderRadius:4,
+      }];
+  mk('r-camp-proy-inv',{type:'bar',
+    data:{labels:selLbls(), datasets:_proyDatasets},
+    options:{
+      indexAxis:'y',
+      responsive:true,maintainAspectRatio:false,
+      interaction:{mode:'index',intersect:false},
+      plugins:{
+        legend:{position:'top',labels:{usePointStyle:true,padding:12,font:{size:11}}},
+        tooltip:{callbacks:{label(ctx){return ` ${ctx.dataset.label}: ${f$(ctx.parsed.x)}`;} }}
+      },
+      scales:{
+        x:{beginAtZero:true,grid:{color:'rgba(0,0,0,.05)'},ticks:{callback:v=>'$'+fK(v),font:{size:11}}},
+        y:{grid:{display:false},ticks:{font:{size:12}}}
+      }
+    }
+  });
+
+  // ── Centro charts (SEL months) ──
+  gBar('r-centro-total',[
+    {label:'Total Centro ($)',data:D.centro.total,color:C.acc},
+  ],v=>'$'+fK(v));
+
+  gBar('r-centro-detail',[
+    {label:'Pre-Kinder',    data:D.centro.pk_monto, color:'#6c3ee8'},
+    {label:'Terapias',      data:D.centro.ter_monto,color:'#8b5cf6'},
+    {label:'Valoraciones',  data:D.centro.valor,    color:'#a78bfa'},
+    {label:'Capacitaciones',data:D.centro.capac,    color:'#c4b5fd'},
+  ],v=>'$'+fK(v));
+
+  // ── Proyecto charts (SEL months) ──
+  gBar('r-proy-conv',[
+    {label:'Leads recibidos',    data:D.proy.leads,  color:C.ads},
+    {label:'Cierres concretados',data:D.proy.cierres,color:'#3b82f6'},
+  ]);
+
+  gBar('r-proy-inv',[
+    {label:'Inversión Proyecto ($)',data:D.ads.invProy,color:C.ads},
+  ],v=>'$'+fK(v));
+
+  // ── IG vs FB comparison charts ──
+  gBar('r-alc',[
+    {label:'Instagram · Cuentas alcanzadas',data:D.ig.alcance,color:C.ig},
+    {label:'Facebook · Espectadores únicos', data:D.fb.esp,    color:C.fb},
+  ]);
+  gBar('r-clics',[
+    {label:'Instagram · Clics al botón bio',data:D.ig.clics,color:C.ig},
+    {label:'Facebook · Clics en enlace',    data:D.fb.clics,color:C.fb},
+  ]);
+  gBar('r-imp',[
+    {label:'Instagram · Views',          data:D.ig.views, color:C.ig},
+    {label:'Facebook · Visualizaciones', data:D.fb.views, color:C.fb},
+  ]);
+}
+
+// Helper: table row
+function rRow(label,data,fmt,pillCls){
+  const isEmpty=data.every(v=>v===null||v===undefined);
+  const fFn=fmt==='money'?f$:fmt==='pct'?v=>v==null?'—':fN(v,1)+'%':fK;
+  const cells=MO.map((_,i)=>{
+    const v=data[i];
+    return `<td>${v==null||v===undefined?'<span class="empty-val">—</span>':fFn(v)}</td>`;
+  }).join('');
+  const lbl=pillCls?`<span class="pill-sm ${pillCls}"></span> ${label}`:label;
+  return `<tr><td class="row-head">${lbl}</td>${cells}</tr>`;
+}
+
+// ── TAB: INSTAGRAM ────────────────────────────────────────────────────────
+function rInstagram(){
+  const p=prevM(), m=lastM();
+
+  // build generación de públicos table rows
+  const pubRows=[
+    ['Likes en Reels',       D.ig.lkReels],
+    ['Comentarios en Reels', D.ig.cmReels],
+    ['Guardados en Reels',   D.ig.gdReels],
+    ['Repost en Reels',      D.ig.rpReels],
+    ['Compartidos en Reels', D.ig.shReels],
+    ['Likes en Posts',       D.ig.lkPosts],
+    ['Compartidos en Posts', D.ig.shPosts],
+    ['Guardados en Posts',   D.ig.gdPosts],
+  ].map(([lbl,arr])=>`<tr><td class="row-head">${lbl}</td>${MO.map((_,i)=>`<td>${arr[i]??'—'}</td>`).join('')}</tr>`).join('');
+
+  // build mejores contenidos table rows
+  const contRows=D.ig.cont.flatMap((c,ci)=>MO.map((mes,mi)=>`
+    <tr>
+      <td style="text-align:center"><span class="badge-num">${ci+1}</span></td>
+      <td>${mes}</td>
+      <td><a class="cont-link" href="${c.link[mi]}" target="_blank">${c.nombre[mi]}</a></td>
+      <td>${fK(c.views[mi])}</td>
+      <td>${c.likes[mi]}</td>
+    </tr>`)).join('');
+
+  // Find most recent month with insight data (fallback if current month is empty)
+  let insightM = m;
+  while(insightM > 0 && !D.ig.insights[insightM]) insightM--;
+  const insightTxt = D.ig.insights[insightM] || 'Sin datos disponibles.';
+  const nextTxt    = D.ig.nextSteps[insightM] || 'Sin datos disponibles.';
+  const insightLabel = insightM !== m ? `Insights · ${MO[insightM]} (último disponible)` : `Insights · ${MO[m]}`;
+
+  document.getElementById('p-instagram').innerHTML=`
+    <div class="pbadge ig">📷 ${MO[m]}${p!==null?' · vs '+MO[p]:' · primer mes'}</div>
+
+    ${sec('Posicionamiento de marca')}
+    <div class="kpi-grid">
+      ${kpi('Visualizaciones',D.ig.views,'k','ig')}
+      ${kpi('Cuentas alcanzadas',D.ig.alcance,'k','ig')}
+      ${kpi('Interacciones totales',D.ig.inter,'k','ig')}
+      ${kpi('Nuevos seguidores',D.ig.seg,'k','ig')}
+      ${kpi('Visitas al perfil',D.ig.visitas,'k','ig')}
+      ${kpi('Clics al botón bio',D.ig.clics,'k','ig')}
+    </div>
+
+    ${sec('Tendencia mensual')}
+    <div class="g1">
+      ${cc('ig-t1','Alcance y Visualizaciones','Evolución mensual — todos los meses')}
+    </div>
+    ${sec('Comparativa por mes seleccionado')}
+    <div class="g1">
+      ${cc('ig-seg-bar','Nuevos seguidores','Meses seleccionados',220)}
+    </div>
+
+    ${sec('Comparativa vs mes anterior')}
+    <div class="g2">
+      ${cc('ig-pct','Variación porcentual',p!==null?MO[p]+' → '+MO[m]:'Seleccioná 2+ meses',230)}
+      ${cc('ig-clic-vs-vis','Clics en bio vs Visitas al perfil','Meses seleccionados',230)}
+    </div>
+
+    ${sec('Audiencia · '+MO[m])}
+    <div class="g2">
+      ${cc('ig-pie','Interacciones: seguidores vs no seguidores','Gráfico de torta — '+MO[m],240)}
+      ${cc('ig-inter-bar','Interacciones totales por mes','Todos los meses seleccionados',240)}
+    </div>
+
+    ${sec('Generación de públicos')}
+    <div class="cc">
+      <div class="cc-title">Desglose de interacciones</div>
+      <div class="cc-sub">Likes, comentarios, guardados, repost y compartidos por mes</div>
+      <div class="rtable-wrap">
+        <table class="rtable">
+          <thead><tr><th>Métrica</th>${MO.map(mo=>`<th>${mo}</th>`).join('')}</tr></thead>
+          <tbody>${pubRows}</tbody>
+        </table>
+      </div>
+    </div>
+
+    ${sec('Mejores contenidos')}
+    <div class="cc">
+      <div class="cc-title">Top 2 contenidos por mes</div>
+      <div class="cc-sub">Nombre, views y likes de los contenidos destacados</div>
+      <div class="rtable-wrap">
+        <table class="rtable">
+          <thead><tr><th>#</th><th>Mes</th><th>Nombre / Link</th><th>Views</th><th>Likes</th></tr></thead>
+          <tbody>${contRows}</tbody>
+        </table>
+      </div>
+    </div>
+
+    ${sec(insightLabel)}
+    <div class="g2">
+      <div class="insight-block">
+        <div class="block-label">💡 Insight</div>
+        <div class="block-text">${insightTxt}</div>
+      </div>
+      <div class="nextsteps-block">
+        <div class="block-label">🎯 Next Steps</div>
+        <div class="block-text">${nextTxt}</div>
+      </div>
+    </div>`;
+
+  // ── charts ──
+  trend('ig-t1',[
+    {label:'Visualizaciones',    data:D.ig.views,   color:C.ig,     colorL:C.igL},
+    {label:'Cuentas alcanzadas', data:D.ig.alcance, color:'#f472b6',colorL:'#f472b620'},
+  ]);
+  gBar('ig-seg-bar', [{label:'Nuevos seguidores', data:D.ig.seg,    color:C.ig}]);
+  pctBar('ig-pct',[
+    {label:'Visualizaciones',data:D.ig.views},{label:'Alcance',data:D.ig.alcance},
+    {label:'Interacciones',  data:D.ig.inter},{label:'Seguidores',data:D.ig.seg},
+    {label:'Visitas perfil', data:D.ig.visitas},{label:'Clics bio',data:D.ig.clics},
+  ],C.ig);
+  gBar('ig-clic-vs-vis',[
+    {label:'Clics en bio',   data:D.ig.clics,  color:C.ig},
+    {label:'Visitas al perfil',data:D.ig.visitas,color:'#f472b6'},
+  ]);
+
+  // Torta: seguidores vs no seguidores (último mes)
+  mk('ig-pie',{type:'pie',
+    data:{labels:['Interacc. seguidores','Interacc. no seguidores'],
+      datasets:[{data:[D.ig.intSeg[m],D.ig.intNoSeg[m]],
+        backgroundColor:[C.ig,'#f472b6'],borderColor:'#fff',borderWidth:3}]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{position:'bottom',labels:{usePointStyle:true,padding:16,font:{size:12}}},
+        tooltip:{callbacks:{label(ctx){
+          const tot=ctx.dataset.data.reduce((a,b)=>a+b,0);
+          return ` ${ctx.label}: ${ctx.parsed} (${((ctx.parsed/tot)*100).toFixed(1)}%)`;
+        }}}}}});
+
+  // Barras: interacciones totales por meses seleccionados
+  gBar('ig-inter-bar',[{label:'Interacciones totales',data:D.ig.inter,color:C.ig}]);
+}
+
+// ── TAB: FACEBOOK ─────────────────────────────────────────────────────────
+function rFacebook(){
+  const p=prevM(), m=lastM();
+
+  // build mejores contenidos rows
+  const fbContRows=D.fb.cont.flatMap((c,ci)=>MO.map((mes,mi)=>`
+    <tr>
+      <td style="text-align:center"><span class="badge-num">${ci+1}</span></td>
+      <td>${mes}</td>
+      <td><a class="cont-link" href="${c.link[mi]}" target="_blank">${c.nombre[mi]}</a></td>
+      <td>${fK(c.views[mi])}</td>
+      <td>${c.likes[mi]}</td>
+    </tr>`)).join('');
+
+  const fbInsightTxt = D.fb.insights[m]  || 'Sin datos para este mes.';
+  const fbNextTxt    = D.fb.nextSteps[m] || 'Sin datos para este mes.';
+
+  document.getElementById('p-facebook').innerHTML=`
+    <div class="pbadge fb">📘 ${MO[m]}${p!==null?' · vs '+MO[p]:' · primer mes'}</div>
+    <div class="kpi-grid">
+      ${kpi('Espectadores únicos',D.fb.esp,'k','fb')}
+      ${kpi('Visualizaciones totales',D.fb.views,'k','fb')}
+      ${kpi('Nuevos seguidores',D.fb.seg,'k','fb')}
+      ${kpi('Clics en enlace',D.fb.clics,'k','fb')}
+    </div>
+
+    ${sec('Alcance y visualizaciones')}
+    <div class="g1">
+      ${cc('fb-alc-views','Espectadores únicos vs Visualizaciones totales','Meses seleccionados',240)}
+    </div>
+
+    ${sec('Generación de públicos')}
+    <div class="g1">
+      ${cc('fb-repro3s','Reproducciones de más de 3 segundos','Meses seleccionados',240)}
+    </div>
+
+    ${sec('Interacciones por formato')}
+    <div class="g1">
+      ${cc('fb-fmt','Evolución por formato','Reels, Fotos y Stories')}
+    </div>
+
+    ${sec('Comparativa vs mes anterior')}
+    <div class="g1">
+      ${cc('fb-pct','Variación porcentual',p!==null?MO[p]+' → '+MO[m]:'Seleccioná 2+ meses',230)}
+    </div>
+
+    ${sec('Mejores contenidos')}
+    <div class="cc">
+      <div class="cc-title">Top 2 contenidos por mes</div>
+      <div class="cc-sub">Nombre, views y likes de los contenidos destacados</div>
+      <div class="rtable-wrap">
+        <table class="rtable">
+          <thead><tr><th>#</th><th>Mes</th><th>Nombre / Link</th><th>Views</th><th>Likes</th></tr></thead>
+          <tbody>${fbContRows}</tbody>
+        </table>
+      </div>
+    </div>
+
+    ${sec('Insights · '+MO[m])}
+    <div class="g2">
+      <div class="insight-block">
+        <div class="block-label">💡 Insight</div>
+        <div class="block-text">${fbInsightTxt}</div>
+      </div>
+      <div class="nextsteps-block">
+        <div class="block-label">🎯 Next Steps</div>
+        <div class="block-text">${fbNextTxt}</div>
+      </div>
+    </div>`;
+
+  // ── charts ──
+  gBar('fb-alc-views',[
+    {label:'Espectadores únicos',    data:D.fb.esp,   color:C.fb},
+    {label:'Visualizaciones totales',data:D.fb.views, color:'#60a5fa'},
+  ]);
+  gBar('fb-repro3s',[
+    {label:'Reproducciones +3s', data:D.fb.repro3s, color:C.fb},
+  ]);
+  stackedBar('fb-fmt',[
+    {label:'Reels',  data:D.fb.reels, color:C.fb},
+    {label:'Fotos',  data:D.fb.foto,  color:'#60a5fa'},
+    {label:'Stories',data:D.fb.story, color:'#bfdbfe'},
+  ]);
+  pctBar('fb-pct',[
+    {label:'Espectadores',  data:D.fb.esp},
+    {label:'Visualizaciones',data:D.fb.views},
+    {label:'Seguidores',    data:D.fb.seg},
+    {label:'Clics enlace',  data:D.fb.clics},
+    {label:'Reprod. +3s',   data:D.fb.repro3s},
+  ],C.fb);
+}
+
+
+// ── TAB: META ADS ─────────────────────────────────────────────────────────
+function rAds(){
+  const p=prevM(), m=lastM();
+
+  // Campaign definitions: key, display label, data key, accent color
+  const CAMPS=[
+    {id:'tofu-ig',  lbl:'TOFU · Tráfico Instagram', dk:'TOFU · Tráfico IG',  col:'#6c3ee8'},
+    {id:'tofu-alc', lbl:'TOFU · Alcance',            dk:'TOFU · Alcance',      col:'#8b5cf6'},
+    {id:'tofu-vid', lbl:'TOFU · Video Views',         dk:'TOFU · Video Views',  col:'#a78bfa'},
+    {id:'mofu-msg', lbl:'MOFU · Mensajes',            dk:'MOFU · Mensajes',     col:'#f59e0b',
+      extras:[{label:'Mensajes recibidos', key:'msgs'}]},
+    {id:'mofu-ld',  lbl:'MOFU · Lead Forms',          dk:'MOFU · Lead Forms',   col:'#f97316'},
+    {id:'bofu-ret', lbl:'BOFU · Retargeting',         dk:'BOFU · Retargeting',  col:'#ef4444'},
+    {id:'tienda-tofu', lbl:'Tienda · TOFU (Visitas web)',          dk:'Tienda · TOFU', col:'#059669',
+      extras:[{label:'Visitas al sitio web', key:'visitas'}]},
+    {id:'tienda-mofu', lbl:'Tienda · MOFU (ViewContent / Add to Cart)', dk:'Tienda · MOFU', col:'#10b981',
+      extras:[{label:'ViewContent', key:'viewcontent'},{label:'Add to Cart', key:'addtocart'}]},
+    {id:'tienda-bofu', lbl:'Tienda · BOFU (Compras)',              dk:'Tienda · BOFU', col:'#34d399',
+      extras:[{label:'Compras', key:'compras'},{label:'Valor de compras ($)', key:'valorCompras', fmt:v=>'$'+fK(v)}]},
+  ];
+
+  const campSections=CAMPS.map(c=>{
+    const an=D.ads.camps[c.dk].anuncio[m];
+    const anHtml=an&&an.url
+      ? `<a class="cont-link" href="${an.url}" target="_blank">${an.txt||an.url}</a>`
+      : `<span style="color:var(--muted);font-style:italic">Sin datos aún — se cargará desde el sheet cuando esté disponible</span>`;
+    return `
+    ${sec(c.lbl)}
+    <div class="g3">
+      ${cc('ads-'+c.id+'-inv','Inversión ($)','Meses seleccionados',210)}
+      ${cc('ads-'+c.id+'-alc','Alcance','Personas únicas impactadas',210)}
+      ${cc('ads-'+c.id+'-imp','Impresiones','Total de impresiones',210)}
+    </div>
+    <div class="g3">
+      ${cc('ads-'+c.id+'-cpm','CPM','Costo por mil impresiones ($)',190)}
+      ${cc('ads-'+c.id+'-cpa','CPA','Costo por acción ($)',190)}
+      ${cc('ads-'+c.id+'-ctr','CTR','Click-through rate (%)',190)}
+    </div>
+    ${(c.extras||[]).map((e,ei)=>`<div class="g1" style="margin-top:4px">${cc('ads-'+c.id+'-extra'+ei,e.label,'Meses seleccionados',200)}</div>`).join('')}
+    <div class="cc" style="margin-top:4px">
+      <div class="cc-title">🏆 Anuncio ganador · ${MO[m]}</div>
+      <div class="cc-sub">El anuncio con mejor performance del mes</div>
+      <div style="padding:12px 16px;font-size:14px;line-height:1.6">${anHtml}</div>
+    </div>`;
+  }).join('');
+
+  const insightTxt=D.ads.insights[m]  || 'Sin datos para este mes.';
+  const nextTxt   =D.ads.nextSteps[m] || 'Sin datos para este mes.';
+
+  document.getElementById('p-ads').innerHTML=`
+    <div class="pbadge ads">📣 ${MO[m]}${p!==null?' · vs '+MO[p]:' · primer mes'}</div>
+    <div class="kpi-grid" style="max-width:340px">
+      ${kpi('Inversión total',D.ads.inv,'money','ads')}
+    </div>
+    ${campSections}
+    ${sec('Insights · '+MO[m])}
+    <div class="g2">
+      <div class="insight-block">
+        <div class="block-label">💡 Insight</div>
+        <div class="block-text">${insightTxt}</div>
+      </div>
+      <div class="nextsteps-block">
+        <div class="block-label">🎯 Next Steps</div>
+        <div class="block-text">${nextTxt}</div>
+      </div>
+    </div>`;
+
+  // Render charts per campaign
+  CAMPS.forEach(c=>{
+    const d=D.ads.camps[c.dk];
+    gBar('ads-'+c.id+'-inv',[{label:'Inversión ($)', data:d.inv, color:c.col}], v=>'$'+fK(v));
+    gBar('ads-'+c.id+'-alc',[{label:'Alcance',       data:d.alc, color:c.col}]);
+    gBar('ads-'+c.id+'-imp',[{label:'Impresiones',   data:d.imp, color:c.col}]);
+    gBar('ads-'+c.id+'-cpm',[{label:'CPM ($)',        data:d.cpm, color:c.col}], v=>'$'+fN(v,2));
+    gBar('ads-'+c.id+'-cpa',[{label:'CPA ($)',        data:d.cpa, color:c.col}], v=>'$'+fN(v,2));
+    gBar('ads-'+c.id+'-ctr',[{label:'CTR (%)',        data:d.ctr, color:c.col}], v=>fN(v,2)+'%');
+    (c.extras||[]).forEach((e,ei)=>{
+      gBar('ads-'+c.id+'-extra'+ei,[{label:e.label, data:d[e.key], color:c.col}], e.fmt||null);
+    });
+  });
+}
+
+// ── GOOGLE SHEETS AUTO-FETCH ──────────────────────────────────────────────
+const SHEET_KEY = '2PACX-1vQx8cxYkcF2DwQEGXImNCQgu2kI2A3wdu0NyhRR8pXjuPKXGmztwXhp6slmMoxsoA';
+const csvUrl = gid=>`https://docs.google.com/spreadsheets/d/e/${SHEET_KEY}/pub?output=csv&gid=${gid}`;
+const GIDS   = {ig:'910282513',fb:'706536454',ads:'809679087',res:'1015862116',gads:'429963772'};
+const MO_FULL = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio',
+                 'Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+
+// CSV parser — handles quoted fields (including multiline)
+function parseCSV(txt){
+  const rows=[]; let row=[],cell='',inQ=false;
+  for(let i=0;i<txt.length;i++){
+    const c=txt[i];
+    if(inQ){if(c==='"'&&txt[i+1]==='"'){cell+='"';i++;}else if(c==='"'){inQ=false;}else{cell+=c;}}
+    else{
+      if(c==='"'){inQ=true;}
+      else if(c===','){row.push(cell);cell='';}
+      else if(c==='\r'&&txt[i+1]==='\n'){row.push(cell);rows.push(row);row=[];cell='';i++;}
+      else if(c==='\n'||c==='\r'){row.push(cell);rows.push(row);row=[];cell='';}
+      else{cell+=c;}
+    }
+  }
+  if(row.length||cell){row.push(cell);rows.push(row);}
+  return rows;
+}
+
+// Find FIRST row by label (col 1 match, trimmed, case-insensitive)
+function rbl(rows,lbl){
+  return rows.find(r=>(r[1]||'').trim().toLowerCase()===lbl.trim().toLowerCase())||[];
+}
+// Find LAST row by label — used for INSIGHT/NEXT STEPS that have a header row + data row
+function rblLast(rows,lbl){
+  const matches=rows.filter(r=>(r[1]||'').trim().toLowerCase()===lbl.trim().toLowerCase());
+  return matches[matches.length-1]||[];
+}
+
+// Extract numbers from active column indices
+function nums(row,cols){return cols.map(c=>{const raw=(row[c]||'').replace(/[$,%]/g,'').replace(/,/g,'').trim();if(!raw)return null;const n=parseFloat(raw);return isNaN(n)?null:n;});}
+
+// Extract text strings from active column indices
+function txts(row,cols){return cols.map(c=>(row[c]||'').trim());}
+
+// Parse "Nombre url" string into separate components
+function parseNL(t){const m=t.match(/https?:\/\/\S+/);return{nombre:(t.replace(m?m[0]:'','').replace(/[-–]\s*$/,'').trim()||t),link:m?m[0]:''};}
+
+// Detect which columns (2–13) have actual IG data
+// Siempre devuelve las 12 columnas para extraer datos de todo el año
+function detectMonths(){ return [2,3,4,5,6,7,8,9,10,11,12,13]; }
+
+// Reconstruye los botones de mes — muestra los 12 siempre, activa los que tienen datos
+function updateMonthUI(){
+  const activeIdx=[];
+  for(let i=0;i<12;i++){
+    const hasIG    = D.ig.views[i]!=null && D.ig.views[i]>0;
+    const hasFB    = D.fb.esp[i]!=null && D.fb.esp[i]>0;
+    const hasAds   = D.ads.invCentro[i]!=null && D.ads.invCentro[i]>0;
+    const hasCamp  = Object.values(D.ads.camps).some(c=>c.inv[i]!=null && c.inv[i]>0);
+    const hasCentro= D.centro.total[i]!=null && D.centro.total[i]>0;
+    const hasProy  = D.proy.inv[i]!=null && D.proy.inv[i]>0;
+    if(hasIG||hasFB||hasAds||hasCamp||hasCentro||hasProy) activeIdx.push(i);
+  }
+  const active = activeIdx.length>0 ? activeIdx : [0,1,2];
+  SEL=[...active];
+  const div=document.querySelector('.months');
+  if(div) div.innerHTML='<span>Período:</span>'+
+    MO.map((mo,i)=>{
+      const hasData=active.includes(i);
+      const selCls=hasData?'sel':'';
+      const disStyle=hasData?'':'opacity:.35;cursor:default;pointer-events:none';
+      return `<button class="mbtn ${selCls}" data-i="${i}" onclick="toggleMonth(${i})" style="${disStyle}">${mo}</button>`;
+    }).join('');
+}
+
+// Extract all ad campaign sections from the ads CSV
+function extractAdsCamps(rows,cols){
+  const HDRS=[
+    {frags:['TRÁFICO A INSTAGRAM'],   key:'TOFU · Tráfico IG'},
+    {frags:['TOFU — ALCANCE'],        key:'TOFU · Alcance'},
+    {frags:['VIDEO VIEWS'],           key:'TOFU · Video Views'},
+    {frags:['MOFU — MENSAJES'],       key:'MOFU · Mensajes'},
+    {frags:['LEAD FORMS'],            key:'MOFU · Lead Forms'},
+    {frags:['RETARGETING'],           key:'BOFU · Retargeting'},
+    {frags:['TIENDA','TOFU'],         key:'Tienda · TOFU'},
+    {frags:['TIENDA','MOFU'],         key:'Tienda · MOFU'},
+    {frags:['TIENDA','BOFU'],         key:'Tienda · BOFU'},
+  ];
+  const starts=[];
+  rows.forEach((row,idx)=>{
+    const lbl=(row[1]||'').replace(/^\s+/,'').toUpperCase();
+    for(const {frags,key} of HDRS){
+      if(frags.every(f=>lbl.includes(f))){starts.push({idx,key});break;}
+    }
+  });
+  const result={};
+  starts.forEach(({idx,key},si)=>{
+    const end=si+1<starts.length?starts[si+1].idx:rows.length;
+    const sec=rows.slice(idx+1,end).filter(r=>(r[1]||'').trim());
+    const sR=lbl=>sec.find(r=>(r[1]||'').trim().toLowerCase()===lbl.toLowerCase())||[];
+    const an=sR('Anuncio Ganador');
+    result[key]={
+      inv:nums(sR('Inversión ($)'),cols),
+      alc:nums(sR('Alcance'),cols),
+      imp:nums(sR('Impresiones'),cols),
+      cpa:nums(sR('CPA ($)'),cols),
+      cpm:nums(sR('CPM ($)'),cols),
+      ctr:nums(sR('CTR (%)'),cols),
+      msgs:nums(sR('Mensajes recibidos'),cols),
+      leads:nums(sR('Leads generados'),cols),
+      visitas:     nums(sR('Visitas al sitio web'),cols),
+      viewcontent: nums(sR('ViewContent'),cols),
+      addtocart:   nums(sR('Add to Cart'),cols),
+      compras:     nums(sR('Compras'),cols),
+      valorCompras:nums(sR('Valor de compras ($)'),cols),
+      anuncio:cols.map(c=>{const t=(an[c]||'').trim();const m=t.match(/https?:\/\/\S+/);return{txt:t.replace(m?m[0]:'','').replace(/[-–]?\s*$/,'').trim(),url:m?m[0]:''};}),
+    };
+  });
+  return result;
+}
+
+// Extract Google Ads campaign sections
+function extractGadsCamps(rows,cols){
+  const HDRS=[
+    {frags:['SEARCH TIENDA','GENERAL'],    key:'Search · Padres General'},
+    {frags:['SEARCH TIENDA','DIAGNÓSTICO'],key:'Search · Padres Diagnóstico'},
+    {frags:['SEARCH TIENDA','DOCENTES'],   key:'Search · Docentes'},
+    {frags:['SHOPPING'],                   key:'Shopping'},
+  ];
+  const starts=[];
+  rows.forEach((row,idx)=>{
+    const lbl=(row[1]||'').replace(/^\s+/,'').toUpperCase();
+    for(const {frags,key} of HDRS){
+      if(frags.every(f=>lbl.includes(f))){starts.push({idx,key});break;}
+    }
+  });
+  const result={};
+  starts.forEach(({idx,key},si)=>{
+    const end=si+1<starts.length?starts[si+1].idx:rows.length;
+    const sec=rows.slice(idx+1,end).filter(r=>(r[1]||'').trim());
+    const sR=lbl=>sec.find(r=>(r[1]||'').trim().toLowerCase()===lbl.toLowerCase())||[];
+    result[key]={
+      inv :nums(sR('Inversión'),cols),
+      imp :nums(sR('Impresiones'),cols),
+      clics:nums(sR('Clics'),cols),
+      ctr :nums(sR('CTR'),cols),
+      cpc :nums(sR('CPC'),cols),
+      conv:nums(sR('Conversiones'),cols),
+      cpa :nums(sR('CPA'),cols),
+      cvr :nums(sR('CVR'),cols),
+    };
+  });
+  return result;
+}
+
+// ── TAB: GOOGLE ADS ───────────────────────────────────────────────────────
+function rGads(){
+  const p=prevM(), m=lastM();
+  const G='#4285F4';
+
+  const CAMPS_G=[
+    {id:'g-pgen',  lbl:'Search · Padres — General',      dk:'Search · Padres General',    col:'#4285F4'},
+    {id:'g-pdiag', lbl:'Search · Padres — Diagnóstico',  dk:'Search · Padres Diagnóstico',col:'#34A853'},
+    {id:'g-doc',   lbl:'Search · Docentes e Instituciones',dk:'Search · Docentes',         col:'#FBBC05'},
+    {id:'g-shop',  lbl:'Shopping',                        dk:'Shopping',                   col:'#EA4335'},
+  ];
+
+  const campSections=CAMPS_G.map(c=>{
+    const d=D.gads.camps[c.dk];
+    return `
+    ${sec(c.lbl)}
+    <div class="kpi-grid" style="grid-template-columns:repeat(auto-fit,minmax(140px,1fr))">
+      ${kpi('Inversión ($)',d.inv,'money','gads')}
+      ${kpi('Impresiones',d.imp,'k','gads')}
+      ${kpi('Clics',d.clics,'k','gads')}
+      ${kpi('CTR (%)',d.ctr,'pct','gads')}
+      ${kpi('CPC ($)',d.cpc,'money','gads')}
+      ${kpi('Conversiones',d.conv,'k','gads')}
+      ${kpi('CPA ($)',d.cpa,'money','gads')}
+      ${kpi('CVR (%)',d.cvr,'pct','gads')}
+    </div>
+    <div class="g3">
+      ${cc('g-'+c.id+'-inv','Inversión ($)','Meses seleccionados',200)}
+      ${cc('g-'+c.id+'-clics','Clics','Meses seleccionados',200)}
+      ${cc('g-'+c.id+'-conv','Conversiones','Meses seleccionados',200)}
+    </div>
+    <div class="g3">
+      ${cc('g-'+c.id+'-ctr','CTR (%)','Click-through rate',190)}
+      ${cc('g-'+c.id+'-cpc','CPC ($)','Costo por clic',190)}
+      ${cc('g-'+c.id+'-cpa','CPA ($)','Costo por conversión',190)}
+    </div>`;
+  }).join('');
+
+  const insightTxt=D.gads.insights[m]  || 'Sin datos para este mes.';
+  const nextTxt   =D.gads.nextSteps[m] || 'Sin datos para este mes.';
+
+  document.getElementById('p-gads').innerHTML=`
+    <div class="pbadge gads">🔍 ${MO[m]}${p!==null?' · vs '+MO[p]:' · primer mes'}</div>
+
+    ${sec('💰 Inversión Total Google Ads')}
+    <div class="kpi-grid" style="grid-template-columns:repeat(auto-fit,minmax(190px,1fr))">
+      ${kpi('Inversión Total ($)',D.gads.invTotal,'money','gads')}
+      ${kpi('Search Tienda ($)',D.gads.invSearch,'money','gads')}
+      ${kpi('Shopping ($)',D.gads.invShop,'money','gads')}
+      ${kpi('Search Proyecto ($)',D.gads.invProy,'money','gads')}
+    </div>
+
+    ${campSections}
+
+    ${sec('Insights · '+MO[m])}
+    <div class="g2">
+      <div class="insight-block">
+        <div class="block-label">💡 Insight</div>
+        <div class="block-text">${insightTxt}</div>
+      </div>
+      <div class="nextsteps-block">
+        <div class="block-label">🎯 Next Steps</div>
+        <div class="block-text">${nextTxt}</div>
+      </div>
+    </div>`;
+
+  // Render charts per campaign
+  CAMPS_G.forEach(c=>{
+    const d=D.gads.camps[c.dk];
+    gBar('g-'+c.id+'-inv',  [{label:'Inversión ($)',  data:d.inv,  color:c.col}], v=>'$'+fK(v));
+    gBar('g-'+c.id+'-clics',[{label:'Clics',          data:d.clics,color:c.col}]);
+    gBar('g-'+c.id+'-conv', [{label:'Conversiones',   data:d.conv, color:c.col}]);
+    gBar('g-'+c.id+'-ctr',  [{label:'CTR (%)',         data:d.ctr,  color:c.col}], v=>fN(v,2)+'%');
+    gBar('g-'+c.id+'-cpc',  [{label:'CPC ($)',         data:d.cpc,  color:c.col}], v=>'$'+fN(v,2));
+    gBar('g-'+c.id+'-cpa',  [{label:'CPA ($)',         data:d.cpa,  color:c.col}], v=>'$'+fN(v,2));
+  });
+}
+
+// Main fetch-and-update function
+async function loadSheetData(){
+  const el=document.getElementById('last-upd');
+  if(el)el.textContent='⏳ Actualizando...';
+
+  // Si se abre desde file://, los navegadores bloquean los fetch HTTP (CORS)
+  if(window.location.protocol==='file:'){
+    if(el){
+      el.textContent='';
+      el.innerHTML='⚠️ Abrí el archivo desde el servidor — <a href="#" onclick="showFileHelp();return false;" style="color:rgba(255,255,255,.7)">¿cómo?</a>';
+    }
+    destroyAll(); RENDERS[TAB](); return;
+  }
+
+  try{
+    const results=await Promise.allSettled(
+      [GIDS.ig,GIDS.fb,GIDS.ads,GIDS.res,GIDS.gads].map(id=>
+        fetch(csvUrl(id)).then(r=>{if(!r.ok)throw new Error(r.status);return r.text();})
+      )
+    );
+    const ok=results.map(r=>r.status==='fulfilled');
+    const [igT,fbT,adsT,resT,gadsT]=results.map(r=>r.status==='fulfilled'?r.value:null);
+    const failCount=ok.filter(v=>!v).length;
+    if(failCount===5){throw new Error('Todos los sheets fallaron');}
+
+    const ig=igT?parseCSV(igT):null;
+    const fb=fbT?parseCSV(fbT):null;
+    const ads=adsT?parseCSV(adsT):null;
+    const res=resT?parseCSV(resT):null;
+    const gads=gadsT?parseCSV(gadsT):null;
+    const ac=detectMonths(); // siempre [2..13]
+
+    // ── Instagram
+    if(ig&&ac){
+      D.ig.views   =nums(rbl(ig,'Visualizaciones (views)'),ac);
+      D.ig.alcance =nums(rbl(ig,'Cuentas alcanzadas'),ac);
+      D.ig.inter   =nums(rbl(ig,'Interacciones totales'),ac);
+      D.ig.seg     =nums(rbl(ig,'Crecimiento de seguidores'),ac);
+      D.ig.visitas =nums(rbl(ig,'Visitas al perfil'),ac);
+      D.ig.clics   =nums(rbl(ig,'Clics al botón de bio'),ac);
+      D.ig.intSeg  =nums(rbl(ig,'Interacciones de seguidores'),ac);
+      D.ig.intNoSeg=nums(rbl(ig,'Interacciones de no seguidores'),ac);
+      D.ig.lkReels =nums(rbl(ig,'Likes en Reels'),ac);
+      D.ig.cmReels =nums(rbl(ig,'Comentarios en Reels'),ac);
+      D.ig.gdReels =nums(rbl(ig,'Guardados en Reels'),ac);
+      D.ig.rpReels =nums(rbl(ig,'Repost en Reels'),ac);
+      D.ig.shReels =nums(rbl(ig,'Compartidos en Reels'),ac);
+      D.ig.lkPosts =nums(rbl(ig,'Likes en Posts'),ac);
+      D.ig.gdPosts =nums(rbl(ig,'Guardados en Posts'),ac);
+      D.ig.shPosts =nums(rbl(ig,'Compartidos en Post'),ac);
+      const iN1=txts(rbl(ig,'Nombre y link contenido #1'),ac);
+      const iN2=txts(rbl(ig,'Nombre y link contenido #2'),ac);
+      D.ig.cont=[
+        {nombre:iN1.map(t=>parseNL(t).nombre),link:iN1.map(t=>parseNL(t).link),
+         views:nums(rbl(ig,'Views contenido #1'),ac),likes:nums(rbl(ig,'Likes contenido #1'),ac)},
+        {nombre:iN2.map(t=>parseNL(t).nombre),link:iN2.map(t=>parseNL(t).link),
+         views:nums(rbl(ig,'Views contenido #2'),ac),likes:nums(rbl(ig,'Likes contenido #2'),ac)},
+      ];
+      D.ig.insights =txts(rblLast(ig,'INSIGHT'),ac);
+      D.ig.nextSteps=txts(rblLast(ig,'NEXT STEPS'),ac);
+    }
+
+    // ── Facebook
+    if(fb&&ac){
+      D.fb.esp    =nums(rbl(fb,'Espectadores únicos'),ac);
+      D.fb.views  =nums(rbl(fb,'Visualizaciones totales'),ac);
+      D.fb.seg    =nums(rbl(fb,'Crecimiento de seguidores'),ac);
+      D.fb.inter  =nums(rbl(fb,'Interacciones totales'),ac);
+      D.fb.repro3s=nums(rbl(fb,'Reproducciones +3s'),ac);
+      D.fb.clics  =nums(rbl(fb,'Clics en enlace'),ac);
+      D.fb.reels  =nums(rbl(fb,'Interacciones en Reels'),ac);
+      D.fb.foto   =nums(rbl(fb,'Interacciones en Foto'),ac);
+      D.fb.story  =nums(rbl(fb,'Interacciones en Story'),ac);
+      const fN1=txts(rbl(fb,'Nombre y link de contenido #1'),ac);
+      const fN2=txts(rbl(fb,'Nombre y link contenido #2'),ac);
+      D.fb.cont=[
+        {nombre:fN1.map(t=>parseNL(t).nombre),link:fN1.map(t=>parseNL(t).link),
+         views:nums(rbl(fb,'Views contenido #1'),ac),likes:nums(rbl(fb,'Interacciones contenido #1'),ac)},
+        {nombre:fN2.map(t=>parseNL(t).nombre),link:fN2.map(t=>parseNL(t).link),
+         views:nums(rbl(fb,'Views contenido #2'),ac),likes:nums(rbl(fb,'Interacciones contenido #2'),ac)},
+      ];
+      D.fb.insights =txts(rblLast(fb,'INSIGHT'),ac);
+      D.fb.nextSteps=txts(rblLast(fb,'NEXT STEPS'),ac);
+    }
+
+
+    // ── Meta Ads
+    if(ads&&ac){
+      D.ads.inv=nums(rbl(ads,'Inversión total ($)'),ac);
+      D.ads.invTotal =nums(rbl(ads,'Inversión total ($)'),ac);
+      D.ads.invCentro=nums(rbl(ads,'Inversión Centro ($)'),ac);
+      D.ads.invProy  =nums(rbl(ads,'Inversion Proyecto ($)'),ac);
+      Object.assign(D.ads.camps,extractAdsCamps(ads,ac));
+      D.ads.alcTotal=MO.map((_,i)=>Object.values(D.ads.camps).reduce((s,c)=>s+(c.alc[i]||0),0));
+      D.ads.insights =ac.map(c=>(rblLast(ads,'INSIGHT')[c]||'').trim());
+      D.ads.nextSteps=ac.map(c=>(rblLast(ads,'NEXT STEPS')[c]||'').trim());
+    }
+
+    // ── Google Ads
+    if(gads&&ac){
+      D.gads.invTotal =nums(rbl(gads,'Inversión total ($)'),ac);
+      D.gads.invSearch=nums(rbl(gads,'Inversion Search Tienda ($)'),ac);
+      D.gads.invShop  =nums(rbl(gads,'Inversion Shopping ($)'),ac);
+      D.gads.invProy  =nums(rbl(gads,'Inversion Search Proyecto ($)'),ac);
+      Object.assign(D.gads.camps, extractGadsCamps(gads,ac));
+      D.gads.insights =ac.map(c=>(rblLast(gads,'INSIGHT')[c]||'').trim());
+      D.gads.nextSteps=ac.map(c=>(rblLast(gads,'NEXT STEPS')[c]||'').trim());
+    }
+
+    // ── Centro y Proyecto
+    if(res&&ac){
+      D.centro.inv      =nums(rbl(res,'Inversion total ($)'),ac);
+      D.centro.pk_cant  =nums(rbl(res,'Pre-Kinder (Cantidad)'),ac);
+      D.centro.pk_monto =nums(rbl(res,'Pre-Kinder ($)'),ac);
+      D.centro.ter_cant =nums(rbl(res,'Terapias individuales (Cantidad)'),ac);
+      D.centro.ter_monto=nums(rbl(res,'Terapias individuales ($)'),ac);
+      D.centro.valor    =nums(rbl(res,'Valoraciones ($)'),ac);
+      D.centro.capac    =nums(rbl(res,'Capacitaciones ($)'),ac);
+      D.centro.total    =nums(rbl(res,'TOTAL CENTRO ($)'),ac);
+      D.proy.inv    =nums(rblLast(res,'Inversion Total ($)'),ac);
+      D.proy.leads  =nums(rbl(res,'Interesados (leads recibidos)'),ac);
+      D.proy.presup =nums(rbl(res,'Presupuestos enviados'),ac);
+      D.proy.cierres=nums(rbl(res,'Cierres concretados'),ac);
+      D.proy.tasa   =ac.map(c=>{
+        const v=(rblLast(res,'Tasa de cierre (%)')[c]||'').replace('%','').trim();
+        const n=parseFloat(v); return isNaN(n)?null:n;
+      });
+    }
+
+    updateMonthUI(); // reconstruir botones con datos ya cargados
+    destroyAll();
+    RENDERS[TAB]();
+    const now=new Date().toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'});
+    if(el)el.textContent= failCount>0
+      ? `⚠️ ${5-failCount}/5 sheets cargados · ${now}`
+      : `✅ Actualizado ${now}`;
+  }catch(e){
+    console.error('Sheet error:',e);
+    if(el)el.textContent='⚠️ Error al cargar — revisá tu conexión y hacé clic en 🔄 Actualizar';
+    destroyAll(); RENDERS[TAB]();
+  }
+}
+
+// ── ROUTING ───────────────────────────────────────────────────────────────
+const RENDERS={resumen:rResumen,instagram:rInstagram,facebook:rFacebook,ads:rAds,gads:rGads};
+
+function doRefresh(){
+  loadSheetData();
+}
+
+function showFileHelp(){
+  alert('Para que el dashboard se conecte al sheet, hay que abrirlo desde un servidor local:\n\n1. Abrí la Terminal\n2. Escribí:\n   cd ~/EDG\n   python3 -m http.server 8080\n3. Abrí en el navegador:\n   http://localhost:8080/dashboard_espacio_de_genios.html\n\nSi ya hiciste eso y sigue fallando, verificá que el Google Sheet esté publicado en la web (Archivo → Compartir → Publicar en la web).');
+}
+
+function setTab(t){
+  TAB=t;
+  document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active',b.dataset.t===t));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('active',p.id==='p-'+t));
+  destroyAll(); RENDERS[t]();
+}
+
+function toggleMonth(i){
+  if(SEL.includes(i)){
+    if(SEL.length===1)return; // keep at least 1
+    SEL=SEL.filter(x=>x!==i);
+  } else {
+    SEL=[...SEL,i].sort((a,b)=>a-b);
+  }
+  document.querySelectorAll('.mbtn').forEach(b=>b.classList.toggle('sel',SEL.includes(+b.dataset.i)));
+  destroyAll(); RENDERS[TAB]();
+}
+
+// INIT — render con datos hardcoded primero, luego fetch del sheet
+RENDERS[TAB]();
+loadSheetData();
+</script>
+</body>
+</html>
